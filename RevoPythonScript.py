@@ -5,13 +5,11 @@ from urllib3 import request
 import pyodbc
 import pandas as pd
 from datetime import datetime
-#
-#
 
 # Getting membership data from Revo
 def urlrequest(urlBase, listOfGyms):
 	# Define needed variables
-	memberCountDf = pd.DataFrame(columns=['Timestamp', 'GymID', 'MemberCount'])
+	memberCountDf = pd.DataFrame(columns=['Timestamp', 'GymName', 'MemberCount'])
 	idCounter = 1
 	# Define now to connect to server
 	http = urllib3.PoolManager()
@@ -23,7 +21,7 @@ def urlrequest(urlBase, listOfGyms):
 		response = http.request('GET', newUrl)
 		# Get the member count and put it into a temp dataframe
 		memberCount = json.loads(response.data.decode('utf-8'))
-		tempDf = pd.DataFrame(data = {'Timestamp':[datetime.now()], 'GymID':[idCounter], 'MemberCount':[memberCount]}, index=[str(idCounter)])
+		tempDf = pd.DataFrame(data = {'Timestamp':[datetime.now()], 'GymName':[gym], 'MemberCount':[memberCount]}, index=[str(idCounter)])
 		# Append the temp dataframe into the main dataframe
 		memberCountDf = pd.concat([memberCountDf, tempDf], axis=0)
 		# Interate the counter
@@ -36,13 +34,12 @@ def addToDatabase(memberDf):
 	# Define needed variables
 	server = 'DESKTOP-ES08OQ7\SQLEXPRESS'
 	database = 'RevoGym'
-	username = 'DESKTOP-ES08OQ7\shado'
 	# Connect to the db
 	cnxn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';Trusted_Connection=yes;')
 	cursor = cnxn.cursor()
 	# Insert dataframe into SQL Server
 	for index, row in memberDf.iterrows():
-		cursor.execute("INSERT INTO fact.MembershipNums (TimeOfQuery, GymID, MemberCount) values(?,?,?)", row.Timestamp, row.GymID, row.MemberCount)
+		cursor.execute("INSERT INTO fact.MembershipNums (TimeOfQuery, GymName, MemberCount) values(?,?,?)", row.Timestamp, row.GymName, row.MemberCount)
 	cnxn.commit()
 	cursor.close()
 	return
@@ -54,4 +51,4 @@ def main(listOfGyms):
 	addToDatabase(memberDf)
 	return
 
-main(['belmont']) # Must be in the same order at the db
+main(['belmont'])
