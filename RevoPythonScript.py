@@ -49,6 +49,7 @@ def main(listOfGyms):
 	urlBase = 'https://revofitness.com.au//wp-content/themes/blankslate/member_visits_v3/'
 	memberDf = urlrequest(urlBase, listOfGyms)
 	addToDatabase(memberDf)
+	print("Completed")
 	return
 
 main(['belmont'])
